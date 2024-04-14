@@ -1,4 +1,5 @@
-import tkinter as tk
+# import tkinter as tk
+from tkinter import *
 import customtkinter
 from tkinter import messagebox
 from PIL import ImageTk, Image
@@ -31,27 +32,6 @@ def create_tables():
     conn.close()
 create_tables()
 
-# def login(user_type, home_page_func):
-#     username = username.get()
-#     password = password.get()
-
-#     conn = sqlite3.connect("users.db")
-#     cursor = conn.cursor()
-
-#     if user_type == "customer":
-#         cursor.execute("SELECT * FROM customers WHERE username=? AND password=?", (username, password))
-#     elif user_type == "admin":
-#         cursor.execute("SELECT * FROM admins WHERE username=? AND password=?", (username, password))
-
-#     user = cursor.fetchone()
-#     conn.close()
-
-#     if user:
-#         messagebox.showinfo("Login", "Login successful!")
-#         home_page_func()
-#     else:
-#         messagebox.showerror("Login", "Invalid username or password")
-
 def login(user_type, home_page_func):
     entered_username = entry1.get()  # Use a different name for Entry widget
     entered_password = entry2.get()  # Use a different name for Entry widget
@@ -73,29 +53,27 @@ def login(user_type, home_page_func):
     else:
         messagebox.showerror("Login", "Invalid username or password")
 
-
-
 def admin_home_page():
     os.system("python home_page.py")
 def open_signup_page():
     app.destroy()
     os.system("python signup.py")
-def forgot_password():
+def forgot_password():  
     app.destroy()
     os.system("python forgotpassword.py")
 
 # Functions for home pages
 def customer_home_page():
-    # Implement customer home page functionality here
-    messagebox.showinfo("Customer Home Page", "Welcome to the Customer Home Page!")
+    app.destroy()
+    os.system("python customer.py")
 
 
 img1 = ImageTk.PhotoImage(Image.open("pattern.png"))
 l1 = customtkinter.CTkLabel(master=app, image=img1)
 l1.pack()
 
-frame = customtkinter.CTkFrame(master=l1, width=320, height=360, corner_radius=15)
-frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+frame = customtkinter.CTkFrame(master=l1, width=320, height=360,  )
+frame.place(relx=0.5, rely=0.5, anchor=customtkinter.CENTER)
 
 l2 = customtkinter.CTkLabel(master=frame, text="Log into your Account", font=('Century Gothic', 20))
 l2.place(x=50, y=45)

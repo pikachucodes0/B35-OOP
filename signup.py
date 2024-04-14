@@ -8,68 +8,64 @@ import os
 customtkinter.set_appearance_mode("System")
 customtkinter.set_default_color_theme("green")
 
-# def show_password():
-#     password_entry.config(show="" if show_password_var.get() else "*")
-
 def validate_username(username):
-    # Basic username validation
     return username.isalnum()
 
 def validate_password(password):
-    # Password length validation
     return len(password) >= 6
+
+def username_exists(username, cursor):
+    cursor.execute("SELECT * FROM customers WHERE username=?", (username,))
+    customer = cursor.fetchone()
+
+    cursor.execute("SELECT * FROM admins WHERE username=?", (username,))
+    admin = cursor.fetchone()
+
+    return customer or admin
 
 def register(user_type):
     entry_username = username_entry.get()
     entry_password = password_entry.get()
 
+    if not entry_username or not entry_password:
+        messagebox.showerror("Registration", "Please enter both username and password")
+        return
+
+    if not validate_username(entry_username):
+        messagebox.showerror("Registration", "Invalid username. Please use alphanumeric characters only.")
+        return
+
+    if not validate_password(entry_password):
+        messagebox.showerror("Registration", "Password should be at least 6 characters long")
+        return
+
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
 
-    if user_type == "customer":
-        cursor.execute("INSERT INTO customers VALUES (?, ?)", (entry_username, entry_password))
-    elif user_type == "admin":
-        cursor.execute("INSERT INTO admins VALUES (?, ?)", (entry_username, entry_password))
+    try:
+        if username_exists(entry_username, cursor):
+            messagebox.showerror("Registration", "Username already exists. Please choose another.")
+            return
 
-    conn.commit()
-    conn.close()
+        if user_type == "customer":
+            cursor.execute("INSERT INTO customers VALUES (?, ?)", (entry_username, entry_password))
+        elif user_type == "admin":
+            cursor.execute("INSERT INTO admins VALUES (?, ?)", (entry_username, entry_password))
 
-    messagebox.showinfo("Registration", "Registration successful!")
+        conn.commit()
+        conn.close()
 
-# def signup_user():
-#     username = username_entry.get()
-#     password = password_entry.get()
+        messagebox.showinfo("Registration", "Registration successful!")
 
-#     # Basic input validation
-#     if not validate_username(username):
-#         messagebox.showerror("Error", "Invalid username. Please use alphanumeric characters only.")
-#         return
-#     if not validate_password(password):
-#         messagebox.showerror("Error", "Password should be at least 6 characters long")
-#         return
+        # Clear input boxes after successful registration
+        username_entry.delete(0, tk.END)
+        password_entry.delete(0, tk.END)
 
-#     # Database connection and insertion
-#     try:
-#         conn = sqlite3.connect("users.db")
-#         cursor = conn.cursor()
-        
-#         # Check if the username already exists
-#         cursor.execute("SELECT * FROM users WHERE username=?", (username,))
-#         if cursor.fetchone():
-#             messagebox.showerror("Error", "Username already exists. Please choose another.")
-#             return
+    except sqlite3.Error as e:
+        messagebox.showerror("Registration", f"Database error: {e}")
 
-#         # Insert user details
-#         cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
-#         conn.commit()
-
-#         messagebox.showinfo("Signup", "Account created successfully!")
-
-#     except sqlite3.Error as e:
-#         messagebox.showerror("Error", f"Database error: {e}")
-
-#     finally:
-#         conn.close()
+    finally:
+        conn.close()
 
 def open_login_page():
     signup_window.destroy()
@@ -94,20 +90,13 @@ username_entry.place(x=50, y=110)
 password_entry = customtkinter.CTkEntry(master=frame_signup, width=220, placeholder_text='Password', show="*")
 password_entry.place(x=50, y=165)
 
-# show_password_var = tk.BooleanVar()
-# show_password_checkbox = tk.Checkbutton(signup_window, text="Show Password", variable=show_password_var, command=show_password)
-# show_password_checkbox.place(x=155, y=200)
-
-# signup_button = customtkinter.CTkButton(master=frame_signup, text="Sign Up", command=signup_user, corner_radius=6)
-
-
 login_button = customtkinter.CTkButton(master=frame_signup, text="Already have an account? Login", command=open_login_page)
 login_button.place(x=60, y=300)
 
 signup_button1 = customtkinter.CTkButton(master=frame_signup, text="Register (Customer)", command=lambda: register("customer"))
 signup_button1.place(x=85, y=210)
-signup_button2 = customtkinter.CTkButton(master=frame_signup, text="Register (Admin)", command=lambda: register("admin"))
-signup_button2.place(x=85,y=250)
 
+signup_button2 = customtkinter.CTkButton(master=frame_signup, text="Register (Admin)", command=lambda: register("admin"))
+signup_button2.place(x=85, y=250)
 
 signup_window.mainloop()
